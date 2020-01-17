@@ -116,9 +116,6 @@ impl Pins<USART3> for (PD8<Alternate<PushPull>>, PD9<Input<Floating>>) {
 }
 
 /// Internal trait for the serial read / write logic.
-///
-/// Note that reading / writing is done on the USART peripheral, not on the
-/// rx / tx pins!
 trait UsartReadWrite: Deref<Target=crate::stm32::usart1::RegisterBlock> {
     fn read(&self) -> nb::Result<u8, Error> {
         let sr = self.sr.read();
