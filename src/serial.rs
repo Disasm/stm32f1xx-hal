@@ -114,15 +114,14 @@ impl Pins<USART3> for (PD8<Alternate<PushPull>>, PD9<Input<Floating>>) {
     const REMAP: u8 = 0b11;
 }
 
-/// Internal trait for the serial read logic.
-trait UsartRead<Word> {
+/// Internal trait for the serial read / write logic.
+///
+/// Note that reading / writing is done on the USART peripheral, not on the
+/// rx / tx pins!
+trait UsartReadWrite<Word> {
     fn read() -> nb::Result<Word, Error>;
-}
-
-/// Internal trait for the serial write logic.
-pub trait UsartWrite<Word> {
-    fn flush() -> nb::Result<(), Infallible>;
     fn write(byte: Word) -> nb::Result<(), Infallible>;
+    fn flush() -> nb::Result<(), Infallible>;
 }
 
 pub enum Parity {
@@ -358,7 +357,7 @@ macro_rules! hal {
                 }
             }
 
-            impl UsartRead<u8> for $USARTX {
+            impl UsartReadWrite<u8> for $USARTX {
                 fn read() -> nb::Result<u8, Error> {
                     // NOTE(unsafe) atomic read with no side effects
                     let sr = unsafe { (*$USARTX::ptr()).sr.read() };
@@ -399,19 +398,6 @@ macro_rules! hal {
                         }
                     }
                 }
-            }
-
-            impl UsartWrite<u8> for $USARTX {
-                fn flush() -> nb::Result<(), Infallible> {
-                    // NOTE(unsafe) atomic read with no side effects
-                    let sr = unsafe { (*$USARTX::ptr()).sr.read() };
-
-                    if sr.tc().bit_is_set() {
-                        Ok(())
-                    } else {
-                        Err(nb::Error::WouldBlock)
-                    }
-                }
 
                 fn write(byte: u8) -> nb::Result<(), Infallible> {
                     // NOTE(unsafe) atomic read with no side effects
@@ -423,6 +409,17 @@ macro_rules! hal {
                         unsafe {
                             ptr::write_volatile(&(*$USARTX::ptr()).dr as *const _ as *mut _, byte)
                         }
+                        Ok(())
+                    } else {
+                        Err(nb::Error::WouldBlock)
+                    }
+                }
+
+                fn flush() -> nb::Result<(), Infallible> {
+                    // NOTE(unsafe) atomic read with no side effects
+                    let sr = unsafe { (*$USARTX::ptr()).sr.read() };
+
+                    if sr.tc().bit_is_set() {
                         Ok(())
                     } else {
                         Err(nb::Error::WouldBlock)
