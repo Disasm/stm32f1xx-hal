@@ -21,7 +21,7 @@ static mut USB_DEVICE: Option<UsbDevice<UsbBusType>> = None;
 #[entry]
 fn main() -> ! {
     let p = cortex_m::Peripherals::take().unwrap();
-    let dp = pac::Peripherals::take().unwrap();
+    let dp = stm32::Peripherals::take().unwrap();
 
     let mut flash = dp.FLASH.constrain();
     let mut rcc = dp.RCC.constrain();
