@@ -27,9 +27,9 @@ unsafe impl UsbPeripheral for Peripheral {
     const EP_MEMORY_ACCESS_2X16: bool = false;
 
     fn enable() {
-        let rcc = unsafe { (&*RCC::ptr()) };
+        cortex_m::interrupt::free(|_| unsafe {
+            let rcc = &*RCC::ptr();
 
-        cortex_m::interrupt::free(|_| {
             // Enable USB peripheral
             rcc.apb1enr.modify(|_, w| w.usben().set_bit());
 
