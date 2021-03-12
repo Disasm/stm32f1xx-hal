@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Breaking changes
+
+- Bump `stm32-usbd` dependency (`0.6.0`)
+
 ### Added
 
 - Support for OpenDrain pin configuration on SPI CLK and MOSI pins
@@ -20,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - Use `cortex-m-rtic` instead of `cortex-m-rtfm` in the examples
+- USB driver is now enabled by default for all devices supporting it
 
 ## [v0.7.0]- 2020-10-17
 
